@@ -9,7 +9,7 @@ If someone can help contribute not just in code but also in ideas, feel free to 
 
 Current features:
 
-    Can work with 3 variable (x, y and z).
+    Can assign variables.
     Insert a previous results by clicking on it in the history.
     Insert the latest result by pressing the "Insert" key (e.g. like "Ans" on calculators).
     Evaluate expressions including variables and many mathematical functions (e.g. trigonometric, exponential/power/logarithmic, min/max, etc). Check ParseExpr.pas for a list. I'd give credit, but al the links in the file are broken, so I don't know who to credit and how to link back to them!
@@ -17,3 +17,4 @@ Current features:
     Can plot up to 10 functions (including polar and parametric, the variable is x no matter the type).
     Can customise all graphs aspects (axes, ticks, colours, etc).
     Can save graphs to PNG.
+    Compared to TExpressionParser, added few functions (e.g. lastpos, cnr, pnr, gamma).
