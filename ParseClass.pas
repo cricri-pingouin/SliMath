@@ -5,8 +5,8 @@ uses OObjects, SysUtils;
 const
   MaxArg = 6;
 const
-  Nan: Double = 0 / 0;
-function isNan(const d: double): boolean;
+  Nan: Double = 0/0;
+function isNan(const d:double):boolean;
 
 type
   TVarType = (vtDouble, vtBoolean, vtString, vtLeftBracket, vtRightBracket,
@@ -211,13 +211,13 @@ type
   protected
     function GetCanVary: Boolean; override;
   public
-    constructor Create(AName, Descr: string; AStringFunc: TStringFunc; ALeftArg, ARightArg:
+    constructor Create(AName, Descr: string; AStringFunc:TStringFunc; ALeftArg, ARightArg:
       TExprWord);
     function Evaluate: Double;
-    property StringFunc: TStringFunc read FStringFunc;
+    property StringFunc:TStringFunc read FStringFunc;
   end;
 
-  TVaryingStringFunction = class(TSimpleStringFunction)
+  TVaryingStringFunction=class(TSimpleStringFunction)
   protected
     function GetCanVary: Boolean; override;
   end;
@@ -241,9 +241,9 @@ implementation
 //function _StrInt(a, b: string): Double;
 
 
-function isNan(const d: double): boolean;
+function isNan(const d:double):boolean;
 begin
-  Result := comp(d) = comp(nan);
+  Result:=comp(d)=comp(nan);
   //slower alternative: CompareMem(@d, @Nan, SizeOf(Double))
 end;
 
@@ -261,7 +261,7 @@ end;
 
 function _StrInt(a, b: string): Double;
 begin
-  result := StrToInt(a);
+  result:=StrToInt(a);
 end;
 
 function _StrEq(s1, s2: string): Double;
@@ -605,7 +605,7 @@ begin
     FStringFunc := @_strin
   else
     raise EParserException.Create(AOper + ' is not a valid string operand');
-  inherited Create(AOper, '', StringFunc, ALeftArg, ARightArg);
+  inherited Create(AOper,'',StringFunc,ALeftArg,ARightArg);
 end;
 
 
@@ -674,13 +674,13 @@ end;
 
 { TSimpleStringFunction }
 
-constructor TSimpleStringFunction.Create(AName, Descr: string; AStringFunc: TStringFunc;
+constructor TSimpleStringFunction.Create(AName, Descr: string; AStringFunc:TStringFunc;
   ALeftArg, ARightArg: TExprWord);
 begin
   FStringFunc := @AStringFunc;
   FLeftArg := ALeftArg;
   FRightArg := ARightArg;
-  inherited Create(AName, Descr, _StringFunc, 0)
+  inherited Create(AName, Descr, _StringFunc,0)
 end;
 
 function TSimpleStringFunction.Evaluate: Double;
@@ -697,13 +697,14 @@ end;
 
 function TSimpleStringFunction.GetCanVary: Boolean;
 begin
-  Result := ((FLeftArg <> nil) and FLeftArg.CanVary) or ((FRightArg <> nil) and FRightArg.CanVary);
+  Result := ((FLeftArg<>nil) and FLeftArg.CanVary) or ((FRightArg<>nil) and FRightArg.CanVary);
 end;
 { TVaryingStringFunction }
 
 function TVaryingStringFunction.GetCanVary: Boolean;
 begin
-  Result := True;
+  Result:=True;
 end;
 
 end.
+

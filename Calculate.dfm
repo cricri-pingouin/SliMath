@@ -2,7 +2,7 @@ object frmCalc: TfrmCalc
   Left = 0
   Top = 0
   Caption = 'SliCalc'
-  ClientHeight = 595
+  ClientHeight = 645
   ClientWidth = 498
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -184,31 +184,31 @@ object frmCalc: TfrmCalc
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
-  OnResize = FormResize
   DesignSize = (
     498
-    595)
+    645)
   PixelsPerInch = 120
   TextHeight = 16
   object edtEq: TEdit
     Left = 0
-    Top = 570
+    Top = 620
     Width = 443
     Height = 24
     Hint = 
       'Double click a row in the list to insert its result'#13#10'or press '#39'I' +
       'nsert'#39' to insert the last result'
-    Anchors = [akLeft, akBottom]
+    Anchors = [akLeft, akRight, akBottom]
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
     OnKeyDown = edtEqKeyDown
+    ExplicitTop = 595
   end
   object strgrd: TStringGrid
     Left = 0
     Top = 0
     Width = 498
-    Height = 564
+    Height = 614
     Anchors = [akLeft, akTop, akRight, akBottom]
     ColCount = 1
     FixedCols = 0
@@ -216,12 +216,14 @@ object frmCalc: TfrmCalc
     FixedRows = 0
     TabOrder = 2
     OnDblClick = strgrdDblClick
+    OnDrawCell = strgrdDrawCell
+    ExplicitHeight = 589
     ColWidths = (
       494)
   end
   object btnEnter: TButton
     Left = 449
-    Top = 570
+    Top = 620
     Width = 49
     Height = 25
     Anchors = [akRight, akBottom]
@@ -229,6 +231,7 @@ object frmCalc: TfrmCalc
     Default = True
     TabOrder = 1
     OnClick = btnEnterClick
+    ExplicitTop = 595
   end
   object mnuCalc: TMainMenu
     Left = 272
@@ -258,6 +261,10 @@ object frmCalc: TfrmCalc
     object mnuGraph: TMenuItem
       Caption = '&Graph'
       OnClick = mnuGraphClick
+    end
+    object mniHelp: TMenuItem
+      Caption = '&Help'
+      OnClick = mniHelpClick
     end
   end
 end

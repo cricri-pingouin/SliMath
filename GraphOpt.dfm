@@ -186,7 +186,7 @@ object frmGraphOptions: TfrmGraphOptions
   end
   object lblGraphThick: TLabel
     Left = 276
-    Top = 317
+    Top = 313
     Width = 61
     Height = 16
     Caption = 'Thickness:'
@@ -219,17 +219,17 @@ object frmGraphOptions: TfrmGraphOptions
     ParentFont = False
   end
   object edtYmax: TEdit
-    Left = 448
+    Left = 438
     Top = 213
-    Width = 41
+    Width = 51
     Height = 24
     TabOrder = 18
     OnKeyPress = TEditSignedFloatOnly
   end
   object edtYmin: TEdit
-    Left = 344
+    Left = 342
     Top = 213
-    Width = 41
+    Width = 51
     Height = 24
     TabOrder = 17
     OnKeyPress = TEditSignedFloatOnly
@@ -237,31 +237,31 @@ object frmGraphOptions: TfrmGraphOptions
   object edtXmin: TEdit
     Left = 344
     Top = 183
-    Width = 41
+    Width = 51
     Height = 24
     TabOrder = 15
     OnKeyPress = TEditSignedFloatOnly
   end
   object edtXmax: TEdit
-    Left = 448
+    Left = 437
     Top = 183
-    Width = 41
+    Width = 51
     Height = 24
     TabOrder = 16
     OnKeyPress = TEditSignedFloatOnly
   end
   object edtYscale: TEdit
-    Left = 342
+    Left = 343
     Top = 63
-    Width = 57
+    Width = 66
     Height = 24
     TabOrder = 12
     OnKeyPress = TEditPositiveFloatOnly
   end
   object edtXscale: TEdit
     Left = 343
-    Top = 30
-    Width = 57
+    Top = 33
+    Width = 66
     Height = 24
     TabOrder = 11
     OnKeyPress = TEditPositiveFloatOnly
@@ -269,23 +269,23 @@ object frmGraphOptions: TfrmGraphOptions
   object clrbxBackground: TColorBox
     Left = 112
     Top = 29
-    Width = 145
+    Width = 154
     Height = 22
     ItemHeight = 16
     TabOrder = 0
   end
   object clrbxAxes: TColorBox
     Left = 112
-    Top = 93
-    Width = 146
+    Top = 95
+    Width = 154
     Height = 22
     ItemHeight = 16
     TabOrder = 2
   end
   object cbbGraphThick: TComboBox
-    Left = 344
-    Top = 313
-    Width = 145
+    Left = 343
+    Top = 310
+    Width = 155
     Height = 24
     Style = csDropDownList
     ItemHeight = 16
@@ -300,7 +300,7 @@ object frmGraphOptions: TfrmGraphOptions
   object cbbAxesThick: TComboBox
     Left = 112
     Top = 124
-    Width = 146
+    Width = 154
     Height = 24
     ItemHeight = 16
     TabOrder = 3
@@ -313,9 +313,9 @@ object frmGraphOptions: TfrmGraphOptions
       '5')
   end
   object edtNumSamples: TEdit
-    Left = 344
-    Top = 247
-    Width = 57
+    Left = 343
+    Top = 250
+    Width = 66
     Height = 24
     Hint = 'Number of points calculated to draw the whole graph'
     ParentShowHint = False
@@ -327,16 +327,16 @@ object frmGraphOptions: TfrmGraphOptions
   object chkJoin: TCheckBox
     Left = 343
     Top = 280
-    Width = 146
+    Width = 155
     Height = 24
     Hint = 'Check=join calculated points; Unchecked=plot dots only'
-    Caption = 'Join segments'
+    Caption = 'Join samples with lines'
     ParentShowHint = False
     ShowHint = True
     TabOrder = 20
   end
   object btnOk: TButton
-    Left = 392
+    Left = 401
     Top = 352
     Width = 97
     Height = 37
@@ -345,7 +345,7 @@ object frmGraphOptions: TfrmGraphOptions
     OnClick = btnOkClick
   end
   object btnCancel: TButton
-    Left = 272
+    Left = 283
     Top = 352
     Width = 97
     Height = 37
@@ -356,7 +356,7 @@ object frmGraphOptions: TfrmGraphOptions
   object edtScaleSize: TEdit
     Left = 112
     Top = 332
-    Width = 57
+    Width = 65
     Height = 24
     Hint = 'Length of the tick marks either side of the axes'
     ParentShowHint = False
@@ -387,7 +387,7 @@ object frmGraphOptions: TfrmGraphOptions
   object clrbxGrid: TColorBox
     Left = 112
     Top = 197
-    Width = 146
+    Width = 154
     Height = 22
     ItemHeight = 16
     TabOrder = 5
@@ -404,8 +404,8 @@ object frmGraphOptions: TfrmGraphOptions
   end
   object clrbxTicks: TColorBox
     Left = 112
-    Top = 301
-    Width = 146
+    Top = 303
+    Width = 154
     Height = 22
     ItemHeight = 16
     TabOrder = 8
@@ -413,7 +413,7 @@ object frmGraphOptions: TfrmGraphOptions
   object cbbGridThick: TComboBox
     Left = 112
     Top = 228
-    Width = 146
+    Width = 154
     Height = 24
     ItemHeight = 16
     TabOrder = 6
@@ -427,8 +427,8 @@ object frmGraphOptions: TfrmGraphOptions
   end
   object cbbTicksThick: TComboBox
     Left = 112
-    Top = 364
-    Width = 146
+    Top = 362
+    Width = 154
     Height = 24
     ItemHeight = 16
     TabOrder = 10
@@ -441,16 +441,16 @@ object frmGraphOptions: TfrmGraphOptions
       '5')
   end
   object clrbxLabels: TColorBox
-    Left = 344
-    Top = 133
-    Width = 146
+    Left = 343
+    Top = 135
+    Width = 155
     Height = 22
     ItemHeight = 16
     TabOrder = 14
   end
   object chkDrawLabels: TCheckBox
-    Left = 344
-    Top = 104
+    Left = 343
+    Top = 105
     Width = 145
     Height = 25
     Caption = 'Draw numbers labels'

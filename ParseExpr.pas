@@ -116,7 +116,7 @@ instead NAN is returned.
 Note that using this directive is less efficient}
 
 uses
-  OObjects, Classes, ParseClass, SharedGlobal;
+  OObjects, Classes, ParseClass;
 
 type
   TCustomExpressionParser = class
@@ -227,17 +227,53 @@ uses
 const
   errorPrefix = 'Error in math expression: ';
 
-procedure _Power(Param: PExpressionRec);
+{ ADDED BY ME : BEGIN }
+function Factorial(X: Extended): Extended;
+begin
+  if X <= 1.1 then
+    Result := 1
+  else
+    Result := X * Factorial(X - 1);
+end;
+
+function Gamma(X: Extended): Extended;
+begin
+  Result := Sqrt(2 * pi * X) * Power(X / Exp(1), X) * (1 + 1 / (12 * X) + 1 / (288 * X * X) - 139 / (51840 * X * X * X) - 571 / (2488320 * X * X * X * X));
+end;
+
+procedure _Gamma(Param: PExpressionRec);
+begin
+  with Param^ do{$IFDEF NAN}
+    if Args[0]^ < 1 then
+      Res := Nan
+    else{$ENDIF}
+      Res := Gamma(Args[0]^ - 1);
+end;
+
+procedure _Cnr(Param: PExpressionRec);
 begin
   with Param^ do
-{$IFDEF NAN}
+    Res := Factorial(Args[0]^) / (Factorial(Args[1]^) * Factorial((Args[0]^) - (Args[1]^)));
+end;
+
+procedure _Pnr(Param: PExpressionRec);
+begin
+  with Param^ do
+    Res := Factorial(Args[0]^) / Factorial((Args[0]^) - (Args[1]^));
+end;
+
+function _LastPos(str1, str2: string): double;
+begin
+  result := LastDelimiter(str1, str2);
+end;
+
+{ ADDED BY ME : END }
+procedure _Power(Param: PExpressionRec);
+begin
+  with Param^ do{$IFDEF NAN}
     if Args[0]^ < 0 then
-    begin
-      FailsToCompute := True;
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Power(Args[0]^, Args[1]^);
 end;
 
@@ -326,43 +362,28 @@ end;
 
 procedure _ln(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
-    if Args[0]^ < 1E-30 then
-    begin
-      FailsToCompute := True;
+  with Param^ do{$IFDEF NAN}
+    if Args[0]^ < 0 then
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Ln(Args[0]^);
 end;
 
 procedure _log10(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
-    if Args[0]^ < 1E-30 then
-    begin
-      FailsToCompute := True;
+  with Param^ do{$IFDEF NAN}
+    if Args[0]^ < 0 then
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Log10(Args[0]^);
 end;
 
 procedure _logN(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
-    if Args[0]^ < 1E-30 then
-    begin
-      FailsToCompute := True;
+  with Param^ do{$IFDEF NAN}
+    if Args[0]^ < 0 then
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := LogN(Args[0]^, Args[1]^);
 end;
 
@@ -431,43 +452,28 @@ end;
 
 procedure _realDivide(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
+  with Param^ do{$IFDEF NAN}
     if Abs(Args[1]^) < 1E-30 then
-    begin
-      FailsToCompute := True;
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Args[0]^ / Args[1]^;
 end;
 
 procedure _Div(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
+  with Param^ do{$IFDEF NAN}
     if Round(Args[1]^) = 0 then
-    begin
-      FailsToCompute := True;
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Round(Args[0]^) div Round(Args[1]^);
 end;
 
 procedure _mod(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
+  with Param^ do{$IFDEF NAN}
     if Round(Args[1]^) = 0 then
-    begin
-      FailsToCompute := True;
       Res := Nan
-    end
-    else
-{$ENDIF}
+    else{$ENDIF}
       Res := Round(Args[0]^) mod Round(Args[1]^);
 end;
 
@@ -577,15 +583,11 @@ end;
 
 procedure _sqrt(Param: PExpressionRec);
 begin
-  with Param^ do
-{$IFDEF NAN}
+  with Param^ do{$IFDEF NAN}
     if Args[0]^ < 0 then
-    begin
-      FailsToCompute := True;
       Res := Nan
-    end
-    else
-{$ENDIF}            Res := Sqrt(Args[0]^);
+    else{$ENDIF}
+      Res := Sqrt(Args[0]^);
 end;
 
 procedure _Percentage(Param: PExpressionRec);
@@ -595,15 +597,6 @@ begin
 end;
 
 procedure _factorial(Param: PExpressionRec);
-
-  function Factorial(X: Extended): Extended;
-  begin
-    if X <= 1.1 then
-      Result := 1
-    else
-      Result := X * Factorial(X - 1);
-  end;
-
 begin
   with Param^ do
     Res := Factorial(Round(Args[0]^));
@@ -662,7 +655,6 @@ begin
   with Param^ do
     Res := Byte(isNan(Args[0]^));
 end;
-
 { TCustomExpressionParser }
 
 function TCustomExpressionParser.CompileExpression(AnExpression: string): Boolean;
@@ -1285,6 +1277,22 @@ begin
   end;
 end;
 
+{$IFDEF NAN}
+function HasNaN(LastRec1: PExpressionRec): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to LastRec1^.ExprWord.NFunctionArg - 1 do//    if (comp(LastRec1^.Args[I]^) = comp(Nan))      //much faster than CompareMem(LastRec1^.Args[I], @Nan, SizeOf(Double))
+//      and (@LastRec1^.ExprWord.DoubleFunc <> @_isNaN) and (@LastRec1^.ExprWord.DoubleFunc <> @_Assign) then
+    if (@LastRec1^.ExprWord.DoubleFunc = @_isNaN) then
+    begin
+      Result := True;
+      exit;
+    end;
+end;
+{$ENDIF}
+
 function TCustomExpressionParser.EvaluateList(ARec: PExpressionRec): Double;
 var
   LastRec1: PExpressionRec;
@@ -1295,20 +1303,18 @@ begin
     while LastRec1^.Next <> nil do
     begin
 {$IFDEF NAN}
-      if (FailsToCompute = True) then
+      if HasNaN(LastRec1) then
         LastRec1^.Res := Nan
-      else
-{$ENDIF}
+      else{$ENDIF}
         LastRec1^.Oper(LastRec1);
-        LastRec1 := LastRec1^.Next;
+      LastRec1 := LastRec1^.Next;
     end;
 {$IFDEF NAN}
-    if (FailsToCompute = True) then
+    if HasNaN(LastRec1) then
       LastRec1^.Res := Nan
-    else
-{$ENDIF}
+    else{$ENDIF}
       LastRec1^.Oper(LastRec1);
-      Result := LastRec1^.Res;
+    Result := LastRec1^.Res;
   end
   else
     Result := Nan;
@@ -1550,6 +1556,18 @@ begin
   LastRec := nil;
 end;
 
+{function TExpressionParser.Evaluate(AnExpression: string): Double;
+begin
+  if AnExpression <> '' then
+  begin
+    AddExpression(AnExpression);
+    Result := EvaluateList(CurrentRec);
+  end
+  else
+    Result := Nan;
+end;
+ }
+
 function TExpressionParser.AddExpression(AnExpression: string): Integer;
 begin
   if AnExpression <> '' then
@@ -1599,8 +1617,7 @@ begin
 {$IFDEF nan}
     if isNan(D) then
       Result := 'NAN'
-    else
-{$ENDIF} if (D < 0.1) and (D > -0.1) then
+    else{$ENDIF} if (D < 0.1) and (D > -0.1) then
       Result := 'False'
     else if (D > 0.9) and (D < 1.1) then
       Result := 'True'
@@ -1696,8 +1713,17 @@ begin
     Add(TFunction.Create('arctanh', 'inverse hyperbolic tangent in rad', _ArcTanh, 1));
     Add(TFunction.Create('degtorad', 'conversion of degrees to radians', _DegToRad, 1));
     Add(TFunction.Create('radtodeg', 'conversion of rad to degrees', _RadToDeg, 1));
-
     DefineStringFunction('pos', 'Position in of substring in string', _pos);
+    //Added by me
+    //Shortened names
+    Add(TFunction.Create('intpow', 'integer power: x^y', _IntPower, 2)); // = intpower
+    Add(TVaryingFunction.Create('norm', 'draw from normal distrib. (mean=x, sd =y)', _randG, 2)); // = randg
+    Add(TVaryingFunction.Create('rand', 'random number between 0 and 1', _random, 0)); // = random
+    //New functions
+    DefineStringFunction('lastpos', 'Position of last substring in string', _LastPos);
+    Add(TFunction.Create('Cnr', 'combination n r', _Cnr, 2));
+    Add(TFunction.Create('Pnr', 'permutation n r', _Pnr, 2));
+    Add(TFunction.Create('gamma', 'Gamma function', _Gamma, 1));
   end;
 end;
 

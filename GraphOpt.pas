@@ -3,8 +3,7 @@ unit GraphOpt;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  SysUtils, Classes, Controls, Forms, Dialogs, StdCtrls, ExtCtrls;
 
 type
   TfrmGraphOptions = class(TForm)
@@ -167,7 +166,7 @@ begin
   edtXmax.Text := FloatToStr(Xmax);
   edtYmin.Text := FloatToStr(Ymin);
   edtYmax.Text := FloatToStr(Ymax);
-  edtNumSamples.Text:= IntToStr(NumSamples);
+  edtNumSamples.Text := IntToStr(NumSamples);
   edtXscale.Text := FloatToStr(XAxisSCale);
   edtYscale.Text := FloatToStr(YAxisSCale);
   edtScaleSize.Text := FloatToStr(ScaleMarkSize);

@@ -14,7 +14,6 @@ uses Graphics;
 
  var
    GraphsList : array[0..9] of TGraph;
-   FailsToCompute: Boolean;
    //Graphs settings
    Xmin, Xmax, Ymin, Ymax, XAxisScale, YAxisScale, ScaleMarkSize: Double;
    BackgroundColour, AxesColour, GridColour, TicksColour, LabelsColour: TColor;

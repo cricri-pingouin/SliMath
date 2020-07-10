@@ -3,8 +3,7 @@ unit GraphList;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  SysUtils, Classes, Controls, Forms, Dialogs, StdCtrls, ExtCtrls;
 
 type
   TfrmGraphList = class(TForm)
@@ -70,6 +69,10 @@ type
     colBox9: TColorBox;
     btnOK: TButton;
     btnCancel: TButton;
+    lblSecond: TLabel;
+    lblFromTo: TLabel;
+    lblPrim: TLabel;
+    lblGraphType: TLabel;
     procedure TEditOnlyNumerical(Sender: TObject; var Key: Char);
     procedure btnOKClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
@@ -166,7 +169,14 @@ begin
   begin
     //Type
     TmpCombo := FindComponent('cmbType' + IntToStr(i)) as TComboBox;
-    TmpCombo.Text := GraphsList[i].GraphType;
+    if (GraphsList[i].GraphType = '(none)') then
+      TmpCombo.ItemIndex := 0
+    else if (GraphsList[i].GraphType = 'Function') then
+      TmpCombo.ItemIndex := 1
+    else if (GraphsList[i].GraphType = 'Polar') then
+      TmpCombo.ItemIndex := 2
+    else if (GraphsList[i].GraphType = 'Parametric') then
+      TmpCombo.ItemIndex := 3;
     //Primary Eq
     TmpEdit := FindComponent('txtPrimary' + IntToStr(i)) as TEdit;
     TmpEdit.Text := GraphsList[i].Eq1;

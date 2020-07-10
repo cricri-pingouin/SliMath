@@ -182,9 +182,7 @@ object frmGraph: TfrmGraph
     0000000000000000000080010000}
   Menu = mnuGraph
   OldCreateOrder = False
-  OnCreate = FormCreate
   OnResize = FormResize
-  OnShow = FormShow
   DesignSize = (
     477
     536)

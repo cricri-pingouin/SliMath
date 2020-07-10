@@ -3,7 +3,7 @@ unit Graph;
 interface
 
 uses
-  Windows, SysUtils, Forms, Graphics, ParseExpr, Dialogs, Classes, Controls,
+  Math, SysUtils, Forms, Graphics, ParseExpr, Dialogs, Classes, Controls,
   ExtCtrls, Menus, ExtDlgs;
 
 type
@@ -21,9 +21,7 @@ type
     procedure mniDrawClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure mniGraphOptClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure mnuSaveClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure mnuGraphListClick(Sender: TObject);
   private
     { Private declarations }
@@ -74,10 +72,16 @@ var
   NewStart: Boolean;
   //List: TStrings;
   GraphParser: TExpressionParser;
+label
+  SkipGraph;
 begin
   //Initialise TBitmap
   imgGraph.Canvas.Brush.Color := BackgroundColour;
   imgGraph.Canvas.FillRect(ClientRect);
+  imgGraph.Picture.Bitmap.Width := imgGraph.Width;
+  imgGraph.Picture.Bitmap.Height := imgGraph.Height;
+  Xscale := imgGraph.Width / (Xmax - Xmin);
+  Yscale := imgGraph.Height / (Ymax - Ymin);
   //Draw grid
   if DrawGrid then
   begin
@@ -241,10 +245,7 @@ begin
   GraphParser.Optimize := True; //Switch on optimization since we'll have many calls
   for GraphNum := 0 to 9 do
   begin
-  {//Prepare equation
-    List := TStringList.Create;
-    ExtractStrings([';'], [], PChar(Eq), List); //Then can use List.Count and List[i] }
-  //Calculate and plot
+    //Calculate and plot
     if (GraphsList[GraphNum].Eq1 <> '') then
     begin
       imgGraph.Canvas.Pen.Color := GraphsList[GraphNum].GraphColour;
@@ -258,11 +259,12 @@ begin
         X := StartX - VarStep;
         repeat
           X := X + VarStep;
-          FailsToCompute := False;
           Y := GraphParser.AsFloat[i];
-          Rx := Y * Cos(X);
-          Ry := Y * Sin(X);
-        until (FailsToCompute <> True) or (X >= EndX);
+        until (not IsNan(Y)) or (X >= EndX);
+        if (X >= EndX) then
+          goto SkipGraph;
+        Rx := Y * Cos(X);
+        Ry := Y * Sin(X);
         if (Interpolate = True) then
           imgGraph.Canvas.MoveTo(XToBMP(Rx), YToBMP(Ry))
         else
@@ -270,14 +272,13 @@ begin
         NewStart := False;
         repeat
           X := X + VarStep;
-          FailsToCompute := False;
           Y := GraphParser.AsFloat[i];
-          Rx := Y * Cos(X);
-          Ry := Y * Sin(X);
-          if (FailsToCompute = True) then
+          if IsNan(Y) then
             NewStart := True
           else
           begin
+            Rx := Y * Cos(X);
+            Ry := Y * Sin(X);
             if (Interpolate = True) and (NewStart = False) then
               imgGraph.Canvas.LineTo(XToBMP(Rx), YToBMP(Ry))
             else if (Interpolate = True) and (NewStart = True) then
@@ -300,10 +301,11 @@ begin
           X := StartX - VarStep;
           repeat
             X := X + VarStep;
-            FailsToCompute := False;
             Rx := GraphParser.AsFloat[i];
             Ry := GraphParser.AsFloat[j];
-          until (FailsToCompute <> True) or (X >= EndX);
+          until (not IsNan(Rx) and not IsNan(Ry)) or (X >= EndX);
+          if (X >= EndX) then
+            goto SkipGraph;
           if (Interpolate = True) then
             imgGraph.Canvas.MoveTo(XToBMP(Rx), YToBMP(Ry))
           else
@@ -311,10 +313,9 @@ begin
           NewStart := False;
           repeat
             X := X + VarStep;
-            FailsToCompute := False;
             Rx := GraphParser.AsFloat[i];
             Ry := GraphParser.AsFloat[j];
-            if (FailsToCompute = True) then
+            if (IsNan(Rx) or IsNan(Ry)) then
               NewStart := True
             else
             begin
@@ -336,9 +337,10 @@ begin
         X := Xmin - VarStep;
         repeat
           X := X + VarStep;
-          FailsToCompute := False;
           Y := GraphParser.AsFloat[i];
-        until (FailsToCompute <> True) or (X >= Xmax);
+        until (not IsNan(Y)) or (X >= Xmax);
+        if (X >= Xmax) then
+          goto SkipGraph;
         if (Interpolate = True) then
           imgGraph.Canvas.MoveTo(XToBMP(X), YToBMP(Y))
         else
@@ -346,9 +348,8 @@ begin
         NewStart := False;
         repeat
           X := X + VarStep;
-          FailsToCompute := False;
           Y := GraphParser.AsFloat[i];
-          if (FailsToCompute = True) then
+          if IsNan(Y) then
             NewStart := True
           else
           begin
@@ -363,31 +364,17 @@ begin
         until X >= Xmax;
       end;
     end;
+SkipGraph:
+
+
   end;
   //Free parser
   GraphParser.Free;
-  //List.Free;
-end;
-
-procedure TfrmGraph.FormCreate(Sender: TObject);
-begin
-  imgGraph.Picture.Bitmap.Width := imgGraph.Width;
-  imgGraph.Picture.Bitmap.Height := imgGraph.Height;
 end;
 
 procedure TfrmGraph.FormResize(Sender: TObject);
 begin
-  imgGraph.Picture.Bitmap.Width := imgGraph.Width;
-  imgGraph.Picture.Bitmap.Height := imgGraph.Height;
-  Xscale := imgGraph.Width / (Xmax - Xmin);
-  Yscale := imgGraph.Height / (Ymax - Ymin);
   DrawGraph();
-end;
-
-procedure TfrmGraph.FormShow(Sender: TObject);
-begin
-  Xscale := imgGraph.Width / (Xmax - Xmin);
-  Yscale := imgGraph.Height / (Ymax - Ymin);
 end;
 
 procedure TfrmGraph.mniDrawClick(Sender: TObject);
