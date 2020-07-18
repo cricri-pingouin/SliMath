@@ -1,13 +1,13 @@
-Unit Calculate;
+unit Calculate;
 
-Interface
+interface
 
-Uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Menus, Grids, StrUtils;
+uses
+  Windows, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
+  Menus, Grids, StrUtils, Clipbrd;
 
-Type
-  TfrmCalc = Class(TForm)
+type
+  TfrmCalc = class(TForm)
     edtEq: TEdit;
     mnuCalc: TMainMenu;
     mnuGraph: TMenuItem;
@@ -19,109 +19,98 @@ Type
     mnuExit: TMenuItem;
     mnuLoad: TMenuItem;
     mnuSave: TMenuItem;
-    Function RemoveSpaces(MyString: String): String;
-    Procedure SaveStringGrid(StringGrid: TStringGrid; Const FileName: TFileName);
-    Procedure LoadStringGrid(StringGrid: TStringGrid; Const FileName: TFileName);
-    Procedure strgrdDblClick(Sender: TObject);
-    Procedure btnEnterClick(Sender: TObject);
-    Procedure FormCreate(Sender: TObject);
-    Procedure FormResize(Sender: TObject);
-    Procedure FormClose(Sender: TObject; Var Action: TCloseAction);
-    Procedure mnuLoadClick(Sender: TObject);
-    Procedure mnuSaveClick(Sender: TObject);
-    Procedure mnuExitClick(Sender: TObject);
-    Procedure mnuClearClick(Sender: TObject);
-    Procedure mnuGraphClick(Sender: TObject);
-    Procedure edtEqKeyDown(Sender: TObject; Var Key: Word; Shift: TShiftState);
-  Private
+    mniHelp: TMenuItem;
+    procedure SaveStringGrid(StringGrid: TStringGrid; const FileName: TFileName);
+    procedure LoadStringGrid(StringGrid: TStringGrid; const FileName: TFileName);
+    procedure strgrdDblClick(Sender: TObject);
+    procedure btnEnterClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure mnuLoadClick(Sender: TObject);
+    procedure mnuSaveClick(Sender: TObject);
+    procedure mnuExitClick(Sender: TObject);
+    procedure mnuClearClick(Sender: TObject);
+    procedure mnuGraphClick(Sender: TObject);
+    procedure edtEqKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure mniHelpClick(Sender: TObject);
+    procedure strgrdDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+  private
     { Private declarations }
-  Public
+  public
     { Public declarations }
-  End;
+  end;
 
-Var
+var
   frmCalc: TfrmCalc;
-  varX, varY, varZ: Double;
   EqCount: Integer;
 
-Implementation
+implementation
 
-Uses
+uses
   SharedGlobal, ParseExpr, Graph, IniFiles;
 
-Var
+var
   MyParser: TExpressionParser;
 
 {$R *.dfm}
 
-Function TfrmCalc.RemoveSpaces(MyString: String): String;
-Begin
-  Result := LowerCase(StringReplace(MyString, ' ', '', [rfReplaceAll]));
-End;
-
-Procedure TfrmCalc.SaveStringGrid(StringGrid: TStringGrid; Const FileName: TFileName);
-Var
+procedure TfrmCalc.SaveStringGrid(StringGrid: TStringGrid; const FileName: TFileName);
+var
   f: TextFile;
   i: Integer;
-Begin
+begin
   AssignFile(f, FileName);
   Rewrite(f);
-  For i := 0 To StringGrid.RowCount - 1 Do
-    Writeln(f, StringGrid.Cells[0, i]);
+  //If history is not clear, there'll be more than one row
+  //Need this, otherwise writes and empty line to history that will get loaded next time
+  if (StringGrid.RowCount > 1) then
+    for i := 0 to StringGrid.RowCount - 1 do
+      Writeln(f, StringGrid.Cells[0, i]);
   CloseFile(f);
-End;
+end;
 
-Procedure TfrmCalc.LoadStringGrid(StringGrid: TStringGrid; Const FileName: TFileName);
-Var
+procedure TfrmCalc.LoadStringGrid(StringGrid: TStringGrid; const FileName: TFileName);
+var
   f: TextFile;
   i: Integer;
-  strTemp, strPrefix: String;
-Begin
+  strTemp: string;
+  //strPrefix: string;
+begin
   //File does not exists? Exit
-  If Not FileExists(FileName) Then
+  if not FileExists(FileName) then
     Exit;
   AssignFile(f, FileName);
   Reset(f);
   i := 0;
-  While Not Eof(f) Do
-  Begin
+  while not Eof(f) do
+  begin
     Readln(f, strTemp);
     Inc(i);
     StringGrid.RowCount := i;
     StringGrid.Cells[0, i - 1] := strTemp;
-    //BEGIN ADDED CHRISTOPHE
-    strPrefix := LeftStr(strTemp, 4);
-    If (strPrefix = 'X = ') Then
-      varX := StrToFloat(RightStr(strTemp, Length(strTemp) - 4))
-    Else If (strPrefix = 'Y = ') Then
-      varY := StrToFloat(RightStr(strTemp, Length(strTemp) - 4))
-    Else If (strPrefix = 'Z = ') Then
-      varZ := StrToFloat(RightStr(strTemp, Length(strTemp) - 4));
-  End;
+  end;
   CloseFile(f);
   EqCount := i;
-End;
+end;
 
-Procedure TfrmCalc.FormCreate(Sender: TObject);
-Var
+procedure TfrmCalc.FormCreate(Sender: TObject);
+var
   myINI: TIniFile;
   I: Integer;
-Begin
+begin
   //Declare parser here and only free it on close to retain variables
   MyParser := TCstyleParser.Create;
   TCStyleParser(MyParser).CStyle := False;
   mnuClearClick(frmCalc);
-  FormResize(frmCalc);
   //To capture keys at the form level while typing equations in TEDit 'edtEq'
   //Processing keys will happen in form TfrmCalc key event
 //  KeyPreview := True;
   //Load history
   LoadStringGrid(strgrd, 'history.txt');
-  If (EqCount > 0) Then
+  if (EqCount > 0) then
     strgrd.Row := EqCount - 1;
   //Load settings
   myINI := TINIFile.Create(ExtractFilePath(Application.EXEName) + 'SliMath.ini');
-  //OptHeight := myINI.ReadInteger('Settings', 'Starting_Height', 0);
   Xmin := myINI.ReadFloat('Graph', 'Xmin', -5);
   Xmax := myINI.ReadFloat('Graph', 'Xmax', 5);
   Ymin := myINI.ReadFloat('Graph', 'Ymin', -5);
@@ -144,51 +133,44 @@ Begin
   DrawTicks := myINI.ReadBool('Graph', 'DrawTicks', True);
   DrawLabels := myINI.ReadBool('Graph', 'DrawLabels', True);
   Interpolate := myINI.ReadBool('Graph', 'Interpolate', True);
-  For I := 0 To 9 Do
-  Begin
+  for I := 0 to 9 do
+  begin
     GraphsList[I].GraphType := myINI.ReadString('GraphEq', 'Graph' + IntToStr(I) + 'Type', '(none)');
     GraphsList[I].Eq1 := myINI.ReadString('GraphEq', 'Graph' + IntToStr(I) + 'Eq1', '');
     GraphsList[I].Eq2 := myINI.ReadString('GraphEq', 'Graph' + IntToStr(I) + 'Eq2', '');
     GraphsList[I].LowBound := myINI.ReadFloat('GraphEq', 'Graph' + IntToStr(I) + 'LowBound', 0);
     GraphsList[I].HighBound := myINI.ReadFloat('GraphEq', 'Graph' + IntToStr(I) + 'HighBound', 0);
     GraphsList[I].GraphColour := myINI.ReadInteger('GraphEq', 'Graph' + IntToStr(I) + 'Colour', 0);
-  End;
+  end;
   myINI.Free;
-End;
+end;
 
-Procedure TfrmCalc.FormResize(Sender: TObject);
-Begin
-  strgrd.ColWidths[0] := strgrd.Width - 4;
-  edtEq.Width := frmCalc.ClientWidth - btnEnter.Width - 2;
-End;
-
-Procedure TfrmCalc.edtEqKeyDown(Sender: TObject; Var Key: Word; Shift: TShiftState);
-Var
-  TempExpr: String;
+procedure TfrmCalc.edtEqKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  TempExpr: string;
   CursorPos: Integer;
-Begin
-  If Key = VK_INSERT Then
-  Begin
-  //Strip variable declaration
-    TempExpr := StringReplace(strgrd.Cells[0, strgrd.Row], 'X = ', '', [rfReplaceAll]);
-    TempExpr := StringReplace(TempExpr, 'Y = ', '', [rfReplaceAll]);
-    TempExpr := StringReplace(TempExpr, 'Z = ', '', [rfReplaceAll]);
-  //Remove spaces. No needed to call RemoveSpaces as that already happened
-    TempExpr := StringReplace(TempExpr, '=', '', [rfReplaceAll]);
-    TempExpr := StringReplace(TempExpr, ' ', '', [rfReplaceAll]);
+begin
+  if Key = VK_INSERT then
+  begin
+    //Strip variable declaration
+    TempExpr := strgrd.Cells[0, strgrd.Row];
+    //Result? Strip '= '
+    if (LeftStr(TempExpr, 2) = '= ') then
+      TempExpr := RightStr(TempExpr, Length(TempExpr) - 2);
+//    TempExpr := StringReplace(TempExpr, ' ', '', [rfReplaceAll]);
   //Insert in edtEq textbox at cursor position
     CursorPos := edtEq.SelStart;
     edtEq.Text := LeftStr(edtEq.Text, CursorPos) + TempExpr + RightStr(edtEq.Text, Length(edtEq.Text) - CursorPos);
     edtEq.SetFocus;
     edtEq.SelStart := CursorPos + Length(TempExpr);
-  End;
-End;
+  end;
+end;
 
-Procedure TfrmCalc.FormClose(Sender: TObject; Var Action: TCloseAction);
-Var
+procedure TfrmCalc.FormClose(Sender: TObject; var Action: TCloseAction);
+var
   myINI: TIniFile;
   i: Integer;
-Begin
+begin
   //Save history
   SaveStringGrid(strgrd, 'history.txt');
   //Now we can free parser
@@ -217,136 +199,163 @@ Begin
   myINI.WriteBool('Graph', 'DrawTicks', DrawTicks);
   myINI.WriteBool('Graph', 'DrawLabels', DrawLabels);
   myINI.WriteBool('Graph', 'Interpolate', Interpolate);
-  For i := 0 To 9 Do
-  Begin
+  for i := 0 to 9 do
+  begin
     myINI.WriteString('GraphEq', 'Graph' + IntToStr(i) + 'Type', GraphsList[i].GraphType);
     myINI.WriteString('GraphEq', 'Graph' + IntToStr(i) + 'Eq1', GraphsList[i].Eq1);
     myINI.WriteString('GraphEq', 'Graph' + IntToStr(i) + 'Eq2', GraphsList[i].Eq2);
     myINI.WriteFloat('GraphEq', 'Graph' + IntToStr(i) + 'LowBound', GraphsList[i].LowBound);
     myINI.WriteFloat('GraphEq', 'Graph' + IntToStr(i) + 'HighBound', GraphsList[i].HighBound);
     myINI.WriteInteger('GraphEq', 'Graph' + IntToStr(i) + 'Colour', GraphsList[i].GraphColour);
-  End;
+  end;
   myINI.Free;
-End;
+end;
 
-Procedure TfrmCalc.strgrdDblClick(Sender: TObject);
-Var
-  TempExpr: String;
+procedure TfrmCalc.strgrdDblClick(Sender: TObject);
+var
+  TempExpr: string;
   CursorPos: Integer;
-Begin
+begin
   //Strip variable declaration
-  TempExpr := StringReplace(strgrd.Cells[0, strgrd.Row], 'X = ', '', [rfReplaceAll]);
-  TempExpr := StringReplace(TempExpr, 'Y = ', '', [rfReplaceAll]);
-  TempExpr := StringReplace(TempExpr, 'Z = ', '', [rfReplaceAll]);
-  //Remove spaces. No needed to call RemoveSpaces as that already happened
-  TempExpr := StringReplace(TempExpr, '=', '', [rfReplaceAll]);
-  TempExpr := StringReplace(TempExpr, ' ', '', [rfReplaceAll]);
+  TempExpr := strgrd.Cells[0, strgrd.Row];
+  if (LeftStr(TempExpr, 2) = '= ') then
+    TempExpr := RightStr(TempExpr, Length(TempExpr) - 2);
   //Insert in edtEq textbox at cursor position
   CursorPos := edtEq.SelStart;
   edtEq.Text := LeftStr(edtEq.Text, CursorPos) + TempExpr + RightStr(edtEq.Text, Length(edtEq.Text) - CursorPos);
   edtEq.SetFocus;
   edtEq.SelStart := CursorPos + Length(TempExpr);
-End;
+  Clipboard.AsText := TempExpr;
+end;
 
-Procedure TfrmCalc.btnEnterClick(Sender: TObject);
-Var
+procedure TfrmCalc.strgrdDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+var
+  S: string;
+  SavedAlign: word;
+begin
+  S := strgrd.Cells[ACol, ARow]; // cell contents
+  if (LeftStr(S, 2) = '= ') then
+  begin
+    SavedAlign := SetTextAlign(strgrd.Canvas.Handle, TA_RIGHT);
+    strgrd.Canvas.TextRect(Rect, Rect.Right - 2, Rect.Top + 2, S);
+    SetTextAlign(strgrd.Canvas.Handle, SavedAlign);
+  end;
+end;
+
+procedure TfrmCalc.btnEnterClick(Sender: TObject);
+var
   EqResult: Double;
-  CurrExpr, TextResult, VarName: String;
+  CurrExpr, TextResult: string;
   i: integer;
-Begin
-  CurrExpr := RemoveSpaces(edtEq.Text);
-  edtEq.Text := CurrExpr;
-  If (CurrExpr = '') Then
+begin
+  CurrExpr := edtEq.Text;
+  if (CurrExpr = '') then
     Exit;
-  VarName := LeftStr(CurrExpr, 2);
-  If (VarName = 'x=') Or (VarName = 'y=') Or (VarName = 'z=') Then
-  Begin
-    CurrExpr := RightStr(CurrExpr, Length(CurrExpr) - 2);
-    VarName := LeftStr(VarName, 1);
-  End
-  Else
-    VarName := '';
   //Evaluate expression
   i := MyParser.AddExpression(CurrExpr);
-  FailsToCompute := False;
   EqResult := MyParser.AsFloat[i];
   //Free parser
   TextResult := floattostr(EqResult);
-  If Not FailsToCompute Then //(TextResult <> 'NAN') then
-  Begin
+  if (TextResult <> 'NAN') then
+  begin
     //Add expression to strgrd
+    //If row is empty, grid cleared: empty row without incrementing
+    if (Length(strgrd.Cells[0, EqCount]) < 1) then
+      Inc(EqCount);
+    strgrd.RowCount := EqCount;
+    strgrd.Cells[0, EqCount - 1] := CurrExpr;
     Inc(EqCount);
     strgrd.RowCount := EqCount;
-    If (VarName = '') Then
-    Begin
-      strgrd.Cells[0, EqCount - 1] := CurrExpr;
-      //Add result to strgrd
-      Inc(EqCount);
-      strgrd.RowCount := EqCount;
-      strgrd.Cells[0, EqCount - 1] := '= ' + TextResult;
-    End
-    Else
-    Begin
-      If (VarName = 'x') Then
-        varX := EqResult
-      Else If (VarName = 'y') Then
-        varY := EqResult
-      Else If (VarName = 'z') Then
-        varZ := EqResult;
-      strgrd.Cells[0, EqCount - 1] := UpperCase(VarName) + ' = ' + TextResult;
-    End;
+    strgrd.Cells[0, EqCount - 1] := '= ' + TextResult;
     edtEq.Text := '';
-  End
-  Else
-  Begin
-    showmessage('Expression cannot be evaluated numerically!');
-  End;
-  //Select latest row: it gets highlighted and the strgrd is scrolled all the way down
-  //Test needed in case grid empty and expression couldn't be evaluated
-  If (EqCount > 0) Then
-    strgrd.Row := EqCount - 1;
-End;
+    //Select latest row: it gets highlighted and the strgrd is scrolled all the way down
+    //Test needed in case grid empty and expression couldn't be evaluated
+    if (EqCount > 0) then
+      strgrd.Row := EqCount - 1;
+    Clipboard.AsText := TextResult;
+  end
+  else
+    ShowMessage('Expression cannot be evaluated numerically!');
+end;
 
-Procedure TfrmCalc.mnuLoadClick(Sender: TObject);
-Begin
+procedure TfrmCalc.mnuLoadClick(Sender: TObject);
+begin
   LoadStringGrid(strgrd, 'history.txt');
-End;
+end;
 
-Procedure TfrmCalc.mnuSaveClick(Sender: TObject);
-Begin
+procedure TfrmCalc.mnuSaveClick(Sender: TObject);
+begin
   SaveStringGrid(strgrd, 'history.txt');
-End;
+end;
 
-Procedure TfrmCalc.mnuExitClick(Sender: TObject);
-Begin
+procedure TfrmCalc.mnuExitClick(Sender: TObject);
+begin
   Close;
-End;
+end;
 
-Procedure TfrmCalc.mnuClearClick(Sender: TObject);
-Begin
+procedure TfrmCalc.mniHelpClick(Sender: TObject);
+var
+  Help: string;
+begin
+  Help := 'When evaluating an expression, the result is copied to the clipboard.' + sLineBreak;
+  Help := Help + 'Double clicking a line in the history copies it to the expression and to the clipboard.' + sLineBreak;
+  Help := Help + 'Pressing  the ''Insert'' key inserts the previous results in the expression.' + sLineBreak;
+  Help := Help + '+, -, *, / [example: 4/2+2*3-1 = 7]' + sLineBreak;
+  Help := Help + '>, >=, <=, <, <>, = [example: 1<2 = 1]' + sLineBreak;
+  Help := Help + 'not, or, and, xor, in [in is equal, example: 14 and 3 = 2]' + sLineBreak;
+  Help := Help + ':= [assign, example: x:=2, i:=3, x*i = 12]' + sLineBreak;
+  Help := Help + 'sqr [example: sqr(5) = 25]' + sLineBreak;
+  Help := Help + 'sqrt [example: sqr(4) = 2]' + sLineBreak;
+  Help := Help + 'exp [example: exp(0) = 1]' + sLineBreak;
+  Help := Help + 'ln, log10, logN [example: log10(100) = 2]' + sLineBreak;
+  Help := Help + '^ [example: 3^3 = 27]' + sLineBreak;
+  Help := Help + 'pow, power [example: power(2.5,2.5) = 9.882...]' + sLineBreak;
+  Help := Help + 'intpow, intpower [example: intpower(2.5,2.5) = 6.25]' + sLineBreak;
+  Help := Help + 'min, max [example: max(2,5) = 5]' + sLineBreak;
+  Help := Help + 'sin, cos, tan [example: cos(pi) = -1]' + sLineBreak;
+  Help := Help + 'arcsin, arccos, arctan [example: arccos(1) = 0]' + sLineBreak;
+  Help := Help + 'arctan2 [example: arctan2(0,1) = 0]' + sLineBreak;
+  Help := Help + 'sinh, cosh, tanh [example: cosh(0) = 1]' + sLineBreak;
+  Help := Help + 'arcsinh, arccosh, arctanh [example: arccosh(1) = 0]' + sLineBreak;
+  Help := Help + 'degtorad, radtodeg [example: radtodeg(pi) = 180]' + sLineBreak;
+  Help := Help + '! [example: !5 = 120]' + sLineBreak;
+  Help := Help + 'gamma [Stirling approx, example: gamma(2.5) = 1.329...]' + sLineBreak;
+  Help := Help + 'Cnr, Pnr [example: Pnr(6,3) = 120]' + sLineBreak;
+//  Add(TFunction.CreateOper('-@', _negate, 1, True, 10));
+//  Add(TFunction.CreateOper('+@', _plus, 1, True, 10));
+//  Add(TFunction.CreateOper('^@', _IntPower, 2, True, 20));
+  Help := Help + '% [example: 10% = 0.1]' + sLineBreak;
+  Help := Help + 'abs [example: abs(-5) = 5]' + sLineBreak;
+  Help := Help + 'round [example: round(exp(1)) = 3]' + sLineBreak;
+  Help := Help + 'trunc [example: trunc(exp(1)) = 2]' + sLineBreak;
+  Help := Help + 'div [integer division, example: 5 div 2 = 2]' + sLineBreak;
+  Help := Help + 'mod [integer division remainder, example: 5 div 2 = 1]' + sLineBreak;
+  Help := Help + '--, ++ [example: 5++ = 6]' + sLineBreak;
+  Help := Help + 'rand, random [random number between 0 and 1]' + sLineBreak;
+  Help := Help + 'norm, randg [normal distribution sample, example: norm(10,3)]' + sLineBreak;
+  Help := Help + 'pos [position of substring, example: pos(''l'',''hello'') = 3]' + sLineBreak;
+  Help := Help + 'lastpos [as pos but last occurence, example: lastpos(''l'',''hello'') = 4]' + sLineBreak;
+  Help := Help + 'if [if statement, example: if(1<2,7,8) = 7]';
+  ShowMessage(Help);
+end;
+
+procedure TfrmCalc.mnuClearClick(Sender: TObject);
+begin
   //StringGrid
   strgrd.Cols[0].Clear;
   strgrd.RowCount := 1;
   EqCount := 0;
   //Current expression
   edtEq.Text := '';
-  //Parser
-  MyParser.ClearExpressions();
-  varX := 0;
-  MyParser.DefineVariable('x', @varX);
-  varY := 0;
-  MyParser.DefineVariable('y', @varY);
-  varZ := 0;
-  MyParser.DefineVariable('z', @varZ);
-End;
+end;
 
-Procedure TfrmCalc.mnuGraphClick(Sender: TObject);
-Begin
-  If frmGraph.Visible = False Then
+procedure TfrmCalc.mnuGraphClick(Sender: TObject);
+begin
+  if frmGraph.Visible = False then
     frmGraph.Visible := True
-  Else
+  else
     frmGraph.Visible := False;
-End;
+end;
 
-End.
+end.
 
