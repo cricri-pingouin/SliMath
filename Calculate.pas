@@ -320,7 +320,7 @@ begin
   Help := Help + 'degtorad, radtodeg [example: radtodeg(pi) = 180]' + sLineBreak;
   Help := Help + '! [example: !5 = 120]' + sLineBreak;
   Help := Help + 'gamma [Stirling approx, example: gamma(2.5) = 1.329...]' + sLineBreak;
-  Help := Help + 'Cnr, Pnr [example: Pnr(6,3) = 120]' + sLineBreak;
+  Help := Help + 'nCr, Cnr, nPr, Pnr [example: Pnr(6,3) = 120]' + sLineBreak;
 //  Add(TFunction.CreateOper('-@', _negate, 1, True, 10));
 //  Add(TFunction.CreateOper('+@', _plus, 1, True, 10));
 //  Add(TFunction.CreateOper('^@', _IntPower, 2, True, 20));

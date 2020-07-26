@@ -202,7 +202,6 @@ object frmCalc: TfrmCalc
     ShowHint = True
     TabOrder = 0
     OnKeyDown = edtEqKeyDown
-    ExplicitTop = 595
   end
   object strgrd: TStringGrid
     Left = 0
@@ -217,7 +216,6 @@ object frmCalc: TfrmCalc
     TabOrder = 2
     OnDblClick = strgrdDblClick
     OnDrawCell = strgrdDrawCell
-    ExplicitHeight = 589
     ColWidths = (
       494)
   end
@@ -231,7 +229,6 @@ object frmCalc: TfrmCalc
     Default = True
     TabOrder = 1
     OnClick = btnEnterClick
-    ExplicitTop = 595
   end
   object mnuCalc: TMainMenu
     Left = 272

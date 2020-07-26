@@ -1722,7 +1722,9 @@ begin
     //New functions
     DefineStringFunction('lastpos', 'Position of last substring in string', _LastPos);
     Add(TFunction.Create('Cnr', 'combination n r', _Cnr, 2));
+    Add(TFunction.Create('nCr', 'combination n r', _Cnr, 2));
     Add(TFunction.Create('Pnr', 'permutation n r', _Pnr, 2));
+    Add(TFunction.Create('nPr', 'permutation n r', _Pnr, 2));
     Add(TFunction.Create('gamma', 'Gamma function', _Gamma, 1));
   end;
 end;

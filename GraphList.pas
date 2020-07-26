@@ -77,8 +77,10 @@ type
     procedure btnOKClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
+    procedure ActiveControlChange(Sender: TObject);
   public
     { Public declarations }
   end;
@@ -92,6 +94,56 @@ uses
   SharedGlobal;
 
 {$R *.dfm}
+
+procedure TfrmGraphList.ActiveControlChange(Sender: TObject);
+var
+  i: Integer;
+  TempString: string;
+  TmpCombo: TComboBox;
+  TmpEdit: TEdit;
+  TmpColor: TColorBox;
+begin
+  TempString := '';
+  for i := 0 to 9 do
+  begin
+    //Type
+    TmpCombo := FindComponent('cmbType' + IntToStr(i)) as TComboBox;
+    TempString := TmpCombo.Text;
+    //Primary Eq
+    TmpEdit := FindComponent('txtPrimary' + IntToStr(i)) as TEdit;
+    if (TempString = '(none)') then
+      TmpEdit.Enabled := False
+    else
+      TmpEdit.Enabled := True;
+    //Secondary Eq
+    TmpEdit := FindComponent('txtSecondary' + IntToStr(i)) as TEdit;
+    GraphsList[i].Eq2 := TmpEdit.Text;
+    if (TempString = '(none)') or (TempString = 'Function') then
+      TmpEdit.Enabled := False
+    else
+      TmpEdit.Enabled := True;
+    //Lower bound
+    TmpEdit := FindComponent('txtLowBound' + IntToStr(i)) as TEdit;
+    GraphsList[i].Eq2 := TmpEdit.Text;
+    if (TempString = '(none)') or (TempString = 'Function') then
+      TmpEdit.Enabled := False
+    else
+      TmpEdit.Enabled := True;
+    //Upper bound
+    TmpEdit := FindComponent('txtHighBound' + IntToStr(i)) as TEdit;
+    GraphsList[i].Eq2 := TmpEdit.Text;
+    if (TempString = '(none)') or (TempString = 'Function') then
+      TmpEdit.Enabled := False
+    else
+      TmpEdit.Enabled := True;
+    //Colour
+    TmpColor := FindComponent('colBox' + IntToStr(i)) as TColorBox;
+    if (TempString = '(none)') then
+      TmpColor.Enabled := False
+    else
+      TmpColor.Enabled := True;
+  end;
+end;
 
 procedure TfrmGraphList.TEditOnlyNumerical(Sender: TObject; var Key: Char);
 begin
@@ -156,15 +208,19 @@ begin
   Close;
 end;
 
+procedure TfrmGraphList.FormHide(Sender: TObject);
+begin
+  Screen.OnActiveControlChange := nil;
+end;
+
 procedure TfrmGraphList.FormShow(Sender: TObject);
 var
   i: Integer;
-  TempString: string;
   TmpCombo: TComboBox;
   TmpEdit: TEdit;
   TmpColor: TColorBox;
 begin
-  TempString := '';
+  Screen.OnActiveControlChange := ActiveControlChange;
   for i := 0 to 9 do
   begin
     //Type

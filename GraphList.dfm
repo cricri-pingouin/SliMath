@@ -12,6 +12,7 @@ object frmGraphList: TfrmGraphList
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 120
   TextHeight = 16
